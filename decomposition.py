@@ -1,7 +1,18 @@
+#coding:utf-8
 __author__ = 'jmh081701'
 import  numpy as np
 import  copy
-def LU(mat):
+import  sys
+
+np.set_printoptions(precision=3,suppress=True)
+def print_matrix(mat):
+    shape=np.shape(mat)
+    for i in range(shape[0]):
+        for j in range(shape[1]):
+            print(round(mat[i,j],3),end="\t")
+        print(end="\n")
+
+def LU_decompose(mat):
     mat=copy.deepcopy(mat)
     shape = np.shape(mat)
     if shape[0]!=shape[1]:
@@ -46,8 +57,15 @@ def LU(mat):
         U[i,i:]=mat[i,i:]
         if i>0:
             L[i,0:i]=mat[i,0:i]
+    print("LU decompose result.")
+    print('P:')
+    print_matrix(P)
+    print("L:")
+    print_matrix(L)
+    print("U:")
+    print_matrix(U)
     return np.asmatrix(P),np.asmatrix(L),np.matrix(U)
-def QR(mat):
+def QR_decompose(mat):
     mat =copy.deepcopy(mat)
     mat = np.asmatrix(mat,dtype=np.float)
     shape = np.shape(mat)
@@ -68,6 +86,11 @@ def QR(mat):
             for row in range(shape[0]):
                 mat[row,column] /=magnitude
             R[column,column]=magnitude
+    print("QR decompose result.")
+    print("Q:")
+    print_matrix(mat)
+    print('R:')
+    print_matrix(R)
     return np.asmatrix(mat),np.asmatrix(R)
 
 def HouseholderReduction(mat):
@@ -79,7 +102,7 @@ def HouseholderReduction(mat):
         submat = np.asmatrix(mat[i:,i:])
         #把第一列取出来
         x= np.asmatrix(submat[:,0])
-        if(x.shape[1]==1):
+        if(x.shape[0]==1):
             continue
         u=copy.deepcopy(x)
         u[0,0]-=np.sqrt(np.float(x.T * x)) #
@@ -87,8 +110,15 @@ def HouseholderReduction(mat):
         _Ri=np.eye(u.shape[0])-2*u*u.T/(np.float(u.T * u))
         Ri=np.eye(shape[0])
         Ri[i:,i:]=_Ri
+        Ri= np.asmatrix(Ri)
         R =Ri *R
+        mat=np.asmatrix(mat)
         mat=Ri * mat
+    print("House Holder Reduce result.")
+    print('P:')
+    print_matrix(R.T)
+    print('T:')
+    print_matrix(mat)
     return np.asmatrix(R,dtype=np.float),np.asmatrix(mat,dtype=np.float)
 def GivensReduction(mat):
     mat = np.asmatrix(mat,dtype=np.float)
@@ -119,12 +149,46 @@ def GivensReduction(mat):
             u=Pi*u
             mat=np.asmatrix(mat)
             mat=Pi*mat
-
+    print("Givens Reduce result.")
+    print('P')
+    print_matrix(P.T)
+    print('T')
+    print_matrix(mat)
     return np.asmatrix(P,dtype=np.float),np.asmatrix(mat,dtype=np.float)
 if __name__ == '__main__':
-    A_LU=np.asmatrix([[2,2,2],[4,7,7],[6,18,22]],dtype=np.float)
-    B_LU=np.asmatrix([[1,2,-3,4],[4,8,12,-8],[2,3,2,1],[-3,-1,1,-4]],dtype=np.float)
-    A_QR=np.asmatrix([[0,-20,-14],[3,27,-4],[4,11,-2]],dtype=np.float)
-    Q,R=GivensReduction(A_QR)
-    print({'Q':25*Q})
-    print({'R':R})
+    #A=np.asmatrix([[0,-20,-14],[3,27,-4],[4 ,11,-2]])
+    #HouseholderReduction(A)
+    while True:
+        print(">============================================<")
+        cmd = input("please select one from this four method :\n LU(1)\t QR(2)\t HouseHolder Reduction(3)\t Givens Reduction(4) End(5):")
+        func=None
+        if "1" in cmd:
+            print("Your select LU decompose method.")
+            func=LU_decompose
+        elif "2" in cmd:
+            print("Your select QR decompose method.")
+            func=QR_decompose
+        elif "3" in cmd:
+            print("Your select HouseHolder Reduction method.")
+            func=HouseholderReduction
+        elif "4" in cmd:
+            print("Your select Givens Reduction method.")
+            func=GivensReduction
+        elif "5" in cmd:
+            print("Bye···"*3)
+            break
+        else:
+            print("Unknow command.")
+            continue
+        row_size=input("Please input the matrix size(for example 4 4)\n\trow size:")
+        col_size=input("\tcol size:")
+        mat=[]
+        row_size=int(row_size)
+        col_size=int(col_size)
+        for i in range(row_size):
+            raw_row=input("The %d row, each entity seperate by space:"%i)
+            row = raw_row.split(" ")
+            row = [float(each) for each in row]
+            mat.append(row)
+        mat = np.asmatrix(mat,dtype=np.float)
+        func(mat)
